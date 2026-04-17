@@ -4,9 +4,11 @@ long long	get_time_ms(void)
 {
 	struct timeval	time;
 	if (gettimeofday(&time, NULL) == -1)
-		write(2, "gettimeofday() error\n", 22);
+	{
+		char *err = "gettimeofday() error\n";
+		write(2, err, strlen(err));
+	}
 	return (((long long)time.tv_sec * 1000) + (time.tv_usec / 1000));
-
 }
 
 void	precise_usleep(long long duration, t_env *env)

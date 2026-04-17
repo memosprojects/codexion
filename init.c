@@ -27,7 +27,7 @@ static int  is_valid_input(int argc, char **argv)
 int	init_env(t_env *env, char **argv)
 {
 	if (!env)
-		return(FAILURE);
+		return (FAILURE);
 	if (is_valid_input(9, argv) == FAILURE)
 		return (write(2, "Error: Invalid arguments\n", 25), FAILURE);
 	env->num_coders = atoi(argv[1]);
@@ -59,12 +59,14 @@ int init_mutexes(t_env *env)
 
 	while (env->initialized_dongles < env->num_coders)
 	{
-		if(pthread_mutex_init(&env->dongles[env->initialized_dongles].mutex, NULL) != 0)
+		if (pthread_mutex_init(&env->dongles[env->initialized_dongles].mutex, NULL) != 0)
 			return (FAILURE);
 		if (pthread_cond_init(&env->dongles[env->initialized_dongles].cond, NULL) != 0)
             return (FAILURE);
+		env->dongles[env->initialized_dongles].wait_queue = NULL;
+        env->dongles[env->initialized_dongles].owner_id = 0;
+        env->dongles[env->initialized_dongles].last_released_at = 0;
         env->initialized_dongles++;
-		env->initialized_dongles++;
 	}
 	if(pthread_mutex_init(&env->print_mutex, NULL) != 0)
 		return (FAILURE);
@@ -83,6 +85,7 @@ int init_coder_info(t_env *env)
 	while (i < env->num_coders)
 	{
 		env->coders[i].id = i + 1;
+		env->coders[i].compile_count = 0;
 		env->coders[i].left_dongle = &env->dongles[i];
 		env->coders[i].right_dongle = &env->dongles[(i + 1) % env->num_coders];
 		env->coders[i].env = env;

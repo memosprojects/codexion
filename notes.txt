@@ -1,0 +1,5 @@
+./codexion 5 600 200 200 200 5 100 fifo
+c3a8c4% ./codexion 5 600 200 200 200 5 100 
+
+fifo seg fault
+edf seg fault
