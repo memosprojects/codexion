@@ -1,12 +1,24 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mehdemir <mehdemir@student.42berlin.d      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/20 13:23:45 by mehdemir          #+#    #+#             */
+/*   Updated: 2026/04/20 13:23:48 by mehdemir         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
-static int  is_valid_input(int argc, char **argv)
+static int	is_valid_input(int argc, char **argv)
 {
 	int	i;
 	int	j;
 
 	i = 1;
-	while (i < argc - 1) // Son argüman (scheduler) hariç sayı kontrolü
+	while (i < argc - 1)
 	{
 		j = 0;
 		if (argv[i][j] == '\0')
@@ -53,33 +65,36 @@ int	init_env(t_env *env, char **argv)
 	return (SUCCESS);
 }
 
-int init_mutexes(t_env *env)
+int	init_mutexes(t_env *env)
 {
 	env->initialized_dongles = 0;
-
 	while (env->initialized_dongles < env->num_coders)
 	{
-		if (pthread_mutex_init(&env->dongles[env->initialized_dongles].mutex, NULL) != 0)
+		if (
+			pthread_mutex_init(
+				&env->dongles[env->initialized_dongles].mutex, NULL) != 0)
 			return (FAILURE);
-		if (pthread_cond_init(&env->dongles[env->initialized_dongles].cond, NULL) != 0)
-            return (FAILURE);
+		if (
+			pthread_cond_init(
+				&env->dongles[env->initialized_dongles].cond, NULL) != 0)
+			return (FAILURE);
 		env->dongles[env->initialized_dongles].wait_queue = NULL;
-        env->dongles[env->initialized_dongles].owner_id = 0;
-        env->dongles[env->initialized_dongles].last_released_at = 0;
-        env->initialized_dongles++;
+		env->dongles[env->initialized_dongles].owner_id = 0;
+		env->dongles[env->initialized_dongles].last_released_at = 0;
+		env->initialized_dongles++;
 	}
-	if(pthread_mutex_init(&env->print_mutex, NULL) != 0)
+	if (pthread_mutex_init(&env->print_mutex, NULL) != 0)
 		return (FAILURE);
 	env->print_mutex_ok = 1;
-	if(pthread_mutex_init(&env->state_mutex, NULL) != 0)
+	if (pthread_mutex_init(&env->state_mutex, NULL) != 0)
 		return (FAILURE);
 	env->state_mutex_ok = 1;
 	return (SUCCESS);
 }
 
-int init_coder_info(t_env *env)
+int	init_coder_info(t_env *env)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (i < env->num_coders)
@@ -119,21 +134,4 @@ void	cleanup(t_env *env)
 		free(env->dongles);
 	if (env->coders)
 		free(env->coders);
-}
-
-void	clear_wait_queue(t_dongle *dongle)
-{
-	t_node	*curr;
-	t_node	*next;
-
-	if (!dongle || !dongle->wait_queue)
-		return ;
-	curr = (t_node *)dongle->wait_queue;
-	while (curr)
-	{
-		next = curr->next;
-		free(curr);
-		curr = next;
-	}
-	dongle->wait_queue = NULL;
 }

@@ -1,16 +1,29 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   simulation.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mehdemir <mehdemir@student.42berlin.d      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/20 13:25:27 by mehdemir          #+#    #+#             */
+/*   Updated: 2026/04/20 13:25:29 by mehdemir         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
-int		start_simulation(t_env *env)
+int	start_simulation(t_env *env)
 {
 	pthread_t	monitor;
 	int			i;
 
 	i = 0;
 	env->start_time = get_time_ms();
-
 	while (i < env->num_coders)
 	{
-		if (pthread_create(&env->coders[i].thread, NULL, &coder_routine, &env->coders[i]) != 0)
+		if (
+			pthread_create(&env->coders[i].thread,
+				NULL, &coder_routine, &env->coders[i]) != 0)
 			return (FAILURE);
 		i++;
 	}
@@ -25,4 +38,3 @@ int		start_simulation(t_env *env)
 	pthread_join(monitor, NULL);
 	return (SUCCESS);
 }
-

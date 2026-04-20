@@ -1,9 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   queue_utils.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mehdemir <mehdemir@student.42berlin.d      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/20 13:25:11 by mehdemir          #+#    #+#             */
+/*   Updated: 2026/04/20 13:25:13 by mehdemir         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 // EDF için deadline hesapla (son derleme başlangıcı + burnout süresi)
-long long get_deadline(t_coder *coder)
+long long	get_deadline(t_coder *coder)
 {
-	long long deadline;
+	long long	deadline;
 
 	pthread_mutex_lock(&coder->state_mutex);
 	deadline = coder->last_compile_start + coder->env->time_to_burnout;
@@ -12,19 +24,18 @@ long long get_deadline(t_coder *coder)
 }
 
 // Kuyruğa yeni bir node ekler (FIFO veya EDF'ye göre)
-void add_to_queue(t_dongle *dongle, t_coder *coder)
+void	add_to_queue(t_dongle *dongle, t_coder *coder)
 {
-	t_node *new_node;
-	t_node **curr;
+	t_node	*new_node;
+	t_node	**curr;
 
 	new_node = malloc(sizeof(t_node));
-	if (!new_node) return;
+	if (!new_node)
+		return ;
 	new_node->coder_id = coder->id;
 	new_node->deadline = get_deadline(coder);
 	new_node->next = NULL;
-
 	curr = (t_node **)&dongle->wait_queue;
-
 	if (coder->env->scheduler == FIFO)
 	{
 		while (*curr)
@@ -41,20 +52,21 @@ void add_to_queue(t_dongle *dongle, t_coder *coder)
 }
 
 // Kuyruğun başındaki coder mı kontrol eder
-int is_my_turn(t_dongle *dongle, t_coder *coder)
+int	is_my_turn(t_dongle *dongle, t_coder *coder)
 {
-	t_node *head = (t_node *)dongle->wait_queue;
+	t_node	*head; 
+
+	head = (t_node *)dongle->wait_queue;
 	if (head && head->coder_id == coder->id)
 		return (1);
 	return (0);
 }
 
 // İşlem bittiğinde coder'ı kuyruktan çıkarır
-void remove_from_queue(t_dongle *dongle, int coder_id)
+void	remove_from_queue(t_dongle *dongle, int coder_id)
 {
 	t_node	**curr;
-	t_node 	*temp;
-
+	t_node	*temp;
 
 	curr = (t_node **)&dongle->wait_queue;
 	while (*curr)
@@ -68,4 +80,21 @@ void remove_from_queue(t_dongle *dongle, int coder_id)
 		}
 		curr = &((*curr)->next);
 	}
+}
+
+void	clear_wait_queue(t_dongle *dongle)
+{
+	t_node	*curr;
+	t_node	*next;
+
+	if (!dongle || !dongle->wait_queue)
+		return ;
+	curr = (t_node *)dongle->wait_queue;
+	while (curr)
+	{
+		next = curr->next;
+		free(curr);
+		curr = next;
+	}
+	dongle->wait_queue = NULL;
 }

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   codexion.h                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mehdemir <mehdemir@student.42berlin.d      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/20 13:24:36 by mehdemir          #+#    #+#             */
+/*   Updated: 2026/04/20 13:24:38 by mehdemir         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef CODEXION_H
 # define CODEXION_H
 
@@ -28,14 +40,14 @@ typedef struct s_dongle {
 	long long		last_released_at;
 	void			*wait_queue;
 	pthread_cond_t	cond;
-	int				owner_id; // FIFO/EDF heap yapısı için pointer
+	int				owner_id;
 }	t_dongle;
 
 typedef struct s_node {
-    int             coder_id;
-    long long       deadline; // Sadece EDF için gerekli
-    struct s_node   *next;
-} t_node;
+	int				coder_id;
+	long long		deadline;
+	struct s_node	*next;
+}	t_node;
 
 /* ** Coder struct:
 ** Every thread holds its own info and env info. But not the other coders
@@ -45,16 +57,16 @@ typedef struct s_coder {
 	int				id;
 	int				compile_count;
 	long long		last_compile_start;
-	pthread_mutex_t state_mutex;
+	pthread_mutex_t	state_mutex;
 	t_dongle		*left_dongle;
 	t_dongle		*right_dongle;
 	struct s_env	*env;
 }	t_coder;
 
 typedef struct s_data {
-	int             *counter;
-    pthread_mutex_t mutex;
-} t_data;
+	int				*counter;
+	pthread_mutex_t	mutex;
+}	t_data;
 
 /* ** Env struct:
 ** Holds all args of the sim and situational sim data.
@@ -67,9 +79,9 @@ typedef struct s_env {
 	int				time_to_refactor;
 	int				num_compiles_req;
 	int				cooldown;
-    int             initialized_dongles;
-    int             print_mutex_ok;
-    int             state_mutex_ok;
+	int				initialized_dongles;
+	int				print_mutex_ok;
+	int				state_mutex_ok;
 	t_sched			scheduler;
 	long long		start_time;
 	int				simulation_running;
@@ -84,7 +96,7 @@ typedef struct s_env {
 // Init & Cleanup
 int			init_env(t_env *env, char **argv);
 int			init_mutexes(t_env *env);
-int         init_coder_info(t_env *env);
+int			init_coder_info(t_env *env);
 void		cleanup(t_env *env);
 
 // Simulation Core
@@ -93,23 +105,26 @@ void		*coder_routine(void *arg);
 void		*monitor_routine(void *arg);
 int			check_burnout(t_env *env);
 int			burnout_flag(t_coder *coder, t_env *env);
-int 		check_deployment(t_env *env);
-int 		check_simulation_status(t_env *env);
-void 		take_dongle(t_coder *coder, t_dongle *dongle);
-void 		release_dongle(t_coder *coder, t_dongle *dongle);
-
+int			check_deployment(t_env *env);
+int			check_simulation_status(t_env *env);
+void		take_dongle(t_coder *coder, t_dongle *dongle);
+void		release_dongle(t_coder *coder, t_dongle *dongle);
+void		coder_refactor(t_coder *coder);
+void		coder_compile(t_coder *coder);
+void		coder_debug(t_coder *coder);
+int			acquire_dongles(t_coder *coder);
 
 // Utils & Timing
 long long	get_time_ms(void);
 void		precise_usleep(long long duration, t_env *env);
 void		log_status(t_coder *coder, char *state);
-void 		debug_coders(t_env *env);
+void		debug_coders(t_env *env);
 
 // Queue Utils
-long long get_deadline(t_coder *coder);
-void add_to_queue(t_dongle *dongle, t_coder *coder);
-int is_my_turn(t_dongle *dongle, t_coder *coder);
-void remove_from_queue(t_dongle *dongle, int coder_id);
-void clear_wait_queue(t_dongle *dongle);
+long long	get_deadline(t_coder *coder);
+void		add_to_queue(t_dongle *dongle, t_coder *coder);
+int			is_my_turn(t_dongle *dongle, t_coder *coder);
+void		remove_from_queue(t_dongle *dongle, int coder_id);
+void		clear_wait_queue(t_dongle *dongle);
 
 #endif
